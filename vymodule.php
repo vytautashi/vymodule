@@ -15,8 +15,8 @@ if (!defined('_PS_VERSION_')) exit;
 class VyModule extends Module
 {
     const DEFAULT_CONFIGURATION = [
-        // Put your default configuration here, e.g :
-        // 'VYMODULE_BACKGROUND_COLOR' => '#eee',
+        'VYMODULE_TASK_NAME' => '',
+        'VYMODULE_TASK_DIFFICULTY' => 1,
     ];
 
     public function __construct()
@@ -40,7 +40,11 @@ class VyModule extends Module
     /** Module configuration page */
     public function getContent()
     {
-        return 'Vy Module configuration page !';
+        if (Tools::isSubmit('submitTaskForm')) {
+            Configuration::updateValue('VYMODULE_TASK_NAME', Tools::getValue('VYMODULE_TASK_NAME'));
+            Configuration::updateValue('VYMODULE_TASK_DIFFICULTY', Tools::getValue('VYMODULE_TASK_DIFFICULTY'));
+        }
+        return $this->renderForm();
     }
 
     /** Initialize the module declaration */
@@ -74,5 +78,64 @@ class VyModule extends Module
         }
 
         return true;
+    }
+
+    /** Generates configuration window form view */
+    public function renderForm()
+    {
+        $form = [
+            [
+                'form' => [
+                    'legend' => [
+                        'title' => $this->l('Settings'),
+                        'icon' => 'icon-cogs'
+                    ],
+                    'input' => [
+                        [
+                            'type' => 'text',
+                            'label' => $this->l('Užduoties pavadinimas'),
+                            'name' => 'VYMODULE_TASK_NAME',
+                        ],
+                        [
+                            'type' => 'select',
+                            'label' => $this->l('Užduoties sunkumas'),
+                            'name' => 'VYMODULE_TASK_DIFFICULTY',
+                            'options' => [
+                                'query' => [
+                                    [
+                                        'id' => 1,
+                                        'label' => 'Lengva',
+                                    ],
+                                    [
+                                        'id' => 2,
+                                        'label' => 'Vidutiniškai sunki',
+                                    ],
+                                    [
+                                        'id' => 3,
+                                        'label' => 'Sunki',
+                                    ],
+                                ],
+                                'id' => 'id',
+                                'name' => 'label',
+                            ],
+                        ],
+                    ],
+                    'submit' => [
+                        'title' => $this->l('Save'),
+                        'class' => 'btn btn-default pull-right'
+                    ],
+                ],
+            ],
+        ];
+
+        $helper = new HelperForm();
+        $helper->submit_action = 'submitTaskForm';
+        $helper->tpl_vars = [
+            'fields_value' => [
+                'VYMODULE_TASK_NAME' => Tools::getValue('VYMODULE_TASK_NAME', Configuration::get('VYMODULE_TASK_NAME')),
+                'VYMODULE_TASK_DIFFICULTY' => Tools::getValue('VYMODULE_TASK_DIFFICULTY', Configuration::get('VYMODULE_TASK_DIFFICULTY')),
+            ],
+        ];
+        return $helper->generateForm($form);
     }
 }
