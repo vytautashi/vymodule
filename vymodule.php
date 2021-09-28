@@ -39,7 +39,8 @@ class VyModule extends Module
             parent::install()
             && $this->installTab()
             && $this->initDefaultConfigurationValues()
-            && Db::getInstance()->execute($sqlQuery);
+            && Db::getInstance()->execute($sqlQuery)
+            && $this->seedClientTable();
     }
 
     public function uninstall()
@@ -57,6 +58,23 @@ class VyModule extends Module
             Configuration::updateValue('VYMODULE_TASK_DIFFICULTY', Tools::getValue('VYMODULE_TASK_DIFFICULTY'));
         }
         return $this->renderForm();
+    }
+
+    /** If client table during installation is empty, seed example rows */
+    private function seedClientTable()
+    {
+        $sql = 'SELECT * FROM ' . self::DB_CLIENT_TABLE;
+        $result = Db::getInstance()->ExecuteS($sql);
+
+        if (!empty($result)) {
+            return true;
+        }
+
+
+        $sql = 'INSERT INTO ' . self::DB_CLIENT_TABLE . ' ( first_name, last_name, email) VALUES ' .
+            '("Tom", "Tom Last", "tom@tom"),("Alice", "Alice Last", "alice@alice")';
+
+        return Db::getInstance()->execute($sql);
     }
 
     /** Initialize the module declaration */
