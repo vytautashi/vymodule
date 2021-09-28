@@ -18,7 +18,9 @@ class VyModule extends Module
         'VYMODULE_TASK_NAME' => '',
         'VYMODULE_TASK_DIFFICULTY' => 1,
     ];
-    const DB_CLIENT_TABLE = _DB_PREFIX_ . 'vymodule_client';
+
+    const PRODUCT_NAME_SUFFIX = " (Bandomoji užduotis)";
+    const DB_CLIENT_TABLE     = _DB_PREFIX_ . 'vymodule_client';
 
     public function __construct()
     {
@@ -37,6 +39,7 @@ class VyModule extends Module
 
         return
             parent::install()
+            && $this->registerHook('actionProductUpdate')
             && $this->installTab()
             && $this->initDefaultConfigurationValues()
             && Db::getInstance()->execute($sqlQuery)
@@ -210,5 +213,28 @@ class VyModule extends Module
             ],
         ];
         return $helper->generateForm($form);
+    }
+
+    /** Adds constant of PRODUCT_NAME_SUFFIX at the end of product name after saving product */
+    public function hookActionProductUpdate(array $params)
+    {
+        $product = $params['product'];
+        $must_update = false;
+
+        foreach (Language::getLanguages(false) as $lang) {
+
+            $name = $product->name[$lang['id_lang']];
+
+            if (substr($name, -strlen(self::PRODUCT_NAME_SUFFIX)) === self::PRODUCT_NAME_SUFFIX) {
+                continue;
+            }
+
+            $product->name[$lang['id_lang']] .= self::PRODUCT_NAME_SUFFIX;
+            $must_update = true;
+        }
+
+        if ($must_update) {
+            $product->save();
+        }
     }
 }
