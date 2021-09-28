@@ -51,7 +51,7 @@ class AdminVyModuleController extends ModuleAdminController
 		$helper->show_toolbar = false;
 		$helper->module = $this;
 		$helper->title = 'Client list';
-		$helper->token = Tools::getAdminTokenLite('AdminModules');
+		$helper->token = $this->token;
 		$helper->currentIndex = AdminController::$currentIndex . '&configure=' . $this->name;
 
 
