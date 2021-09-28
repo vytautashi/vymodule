@@ -18,6 +18,7 @@ class VyModule extends Module
         'VYMODULE_TASK_NAME' => '',
         'VYMODULE_TASK_DIFFICULTY' => 1,
     ];
+    const DB_CLIENT_TABLE = _DB_PREFIX_ . 'vymodule_client';
 
     public function __construct()
     {
@@ -26,9 +27,18 @@ class VyModule extends Module
 
     public function install()
     {
+        $sqlQuery = ' CREATE TABLE IF NOT EXISTS `' . self::DB_CLIENT_TABLE . '` (
+            `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+            `first_name` varchar(255) NOT NULL,
+            `last_name` varchar(255) NOT NULL,
+            `email` varchar(255) NOT NULL,
+            PRIMARY KEY (`id`)
+        ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=UTF8;';
+
         return
             parent::install()
-            && $this->initDefaultConfigurationValues();
+            && $this->initDefaultConfigurationValues()
+            && Db::getInstance()->execute($sqlQuery);
     }
 
     public function uninstall()
