@@ -37,6 +37,7 @@ class VyModule extends Module
 
         return
             parent::install()
+            && $this->installTab()
             && $this->initDefaultConfigurationValues()
             && Db::getInstance()->execute($sqlQuery);
     }
@@ -44,7 +45,8 @@ class VyModule extends Module
     public function uninstall()
     {
         return
-            parent::uninstall();
+            parent::uninstall()
+            && $this->uninstallTab();
     }
 
     /** Module configuration page */
@@ -76,6 +78,49 @@ class VyModule extends Module
         $this->displayName = $this->l('Vy Module');
         $this->description = $this->l('My Module Description');
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall this module ?');
+    }
+
+    /** Install module tab, to your admin controller */
+    private function installTab()
+    {
+        $languages = Language::getLanguages();
+
+        $tab = new Tab();
+        $tab->class_name = 'AdminVyModule';
+        $tab->module = $this->name;
+        $tab->id_parent = (int)Tab::getIdFromClassName('DEFAULT');
+
+        foreach ($languages as $lang) {
+            $tab->name[$lang['id_lang']] = 'Vy Module';
+        }
+
+        try {
+            $tab->save();
+        } catch (Exception $e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /** Uninstall module tab */
+    private function uninstallTab()
+    {
+        $tab = (int)Tab::getIdFromClassName('AdminVyModule');
+
+        if ($tab) {
+            $mainTab = new Tab($tab);
+
+            try {
+                $mainTab->delete();
+            } catch (Exception $e) {
+                echo $e->getMessage();
+
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /** Set module default configuration into database */
