@@ -30,21 +30,12 @@ class VyModule extends Module
 
     public function install()
     {
-        $sqlQuery = ' CREATE TABLE IF NOT EXISTS `' . self::DB_CLIENT_TABLE . '` (
-            `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-            `first_name` varchar(255) NOT NULL,
-            `last_name` varchar(255) NOT NULL,
-            `email` varchar(255) NOT NULL,
-            PRIMARY KEY (`id`)
-        ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=UTF8;';
-
         return
             parent::install()
             && $this->registerHook('actionProductUpdate')
             && $this->installTab()
             && $this->initDefaultConfigurationValues()
-            && Db::getInstance()->execute($sqlQuery)
-            && $this->seedClientTable();
+            && $this->createAndSeedClientTable();
     }
 
     public function uninstall()
@@ -64,9 +55,23 @@ class VyModule extends Module
         return $this->renderForm();
     }
 
-    /** If client table during installation is empty, seed example rows */
-    private function seedClientTable()
+    /** Creates client table in DB and seeds data to it */
+    private function createAndSeedClientTable()
     {
+        $sqlQuery = ' CREATE TABLE IF NOT EXISTS `' . self::DB_CLIENT_TABLE . '` (
+            `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+            `first_name` varchar(255) NOT NULL,
+            `last_name` varchar(255) NOT NULL,
+            `email` varchar(255) NOT NULL,
+            PRIMARY KEY (`id`)
+        ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=UTF8;';
+
+        if (!Db::getInstance()->execute($sqlQuery)) {
+            return false;
+        }
+
+
+        // Code for seeding table
         $sql = 'SELECT * FROM ' . self::DB_CLIENT_TABLE;
         $result = Db::getInstance()->ExecuteS($sql);
 
