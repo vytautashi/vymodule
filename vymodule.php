@@ -12,6 +12,7 @@
 
 if (!defined('_PS_VERSION_')) exit;
 
+require_once(_PS_MODULE_DIR_ . 'vymodule/classes/VyClient.php');
 class VyModule extends Module
 {
     const DEFAULT_CONFIGURATION = [
@@ -20,7 +21,7 @@ class VyModule extends Module
     ];
 
     const PRODUCT_NAME_SUFFIX = " (Bandomoji užduotis)";
-    const DB_CLIENT_TABLE     = _DB_PREFIX_ . 'vymodule_client';
+    const DB_CLIENT_TABLE     = _DB_PREFIX_ . VyClient::TABLE;
 
     public function __construct()
     {
